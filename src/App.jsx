@@ -9,7 +9,7 @@ import ProductCard from './component/ProductCard';
 // pages (pastikan folder & nama file juga sama persis)
 import Dashboard from './pages/admin/admin/Dashboard';
 import About from './pages/admin/admin/Pengaturan';
-import Keranjang from './pages/admin/client/Keranjang'; 
+import Keranjang from './pages/admin/client/Keranjang';
 
 import './App.css';
 
