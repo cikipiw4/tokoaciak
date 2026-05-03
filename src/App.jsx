@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Sidebar from './componant/Sidebar';
-import Navbar from './componant/navbar';
-import Dashboard from './pages/admin/admin/dashboard';
-import ProductCard from './componant/productcard';
-import About from './pages/admin/admin/pengaturan'; 
-import Keranjang from './pages/admin/client/keranjang'; 
+
+// FIX: component (bukan componant) + huruf besar konsisten
+import Sidebar from './component/Sidebar';
+import Navbar from './component/Navbar';
+import ProductCard from './component/ProductCard';
+
+// pages (pastikan folder & nama file juga sama persis)
+import Dashboard from './pages/admin/admin/Dashboard';
+import About from './pages/admin/admin/Pengaturan';
+import Keranjang from './pages/admin/client/keranjang';
+
 import './App.css';
 
 function App() {
