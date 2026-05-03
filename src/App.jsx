@@ -6,7 +6,7 @@ import Navbar from './component/Navbar';
 import ProductCard from './component/ProductCard';
 import Dashboard from './pages/admin/admin/Dashboard';
 import About from './pages/admin/admin/Pengaturan';
-import Keranjang from './pages/admin/client/Keranjangeranjang';
+import Keranjang from './pages/admin/client/Keranjang';
 
 import './App.css';
 
