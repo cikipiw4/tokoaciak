@@ -1,5 +1,5 @@
 import React from 'react';
-import ProductCard from '../../../componant/productcard';
+import ProductCard from '../../../componant/productCard';
 
 function Dashboard({ onAdd }) {
   return (
