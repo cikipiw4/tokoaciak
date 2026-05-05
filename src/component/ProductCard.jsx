@@ -9,7 +9,7 @@ import {
   serverTimestamp, 
   doc, 
   deleteDoc 
-} from "firebase/firestore"; // Ditambahkan doc dan deleteDoc
+} from "firebase/firestore";
 
 function ProductCard({ onAdd, isAdmin }) {
   const [products, setProducts] = useState([]);
@@ -18,21 +18,36 @@ function ProductCard({ onAdd, isAdmin }) {
   const [newProduct, setNewProduct] = useState({ nama: '', harga: '' });
   const [selectedFile, setSelectedFile] = useState(null);
 
+  // PERBAIKAN DI SINI: Menambahkan filter untuk mencegah crash saat data baru diproses
   useEffect(() => {
     const q = query(collection(db, "produk"), orderBy("createdAt", "desc"));
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      // Kita hanya memproses dokumen yang datanya sudah lengkap/stabil
+      const items = snapshot.docs
+        .map(doc => {
+          const data = doc.data();
+          // Jika createdAt belum ada (masih di proses server), kita kasih fallback atau abaikan
+          if (!data.createdAt) return null; 
+          return { id: doc.id, ...data };
+        })
+        .filter(item => item !== null); // Buang yang null agar tidak error saat render
+
+      setProducts(items);
+    }, (error) => {
+      console.error("Firestore error:", error);
     });
+
     return () => unsubscribe();
   }, []);
 
-  // Fungsi Hapus Produk dari Firebase
+  // Fungsi Hapus Produk (Sudah Benar)
   const handleDelete = async (productId, productName) => {
     const confirmDelete = window.confirm(`Hapus "${productName}" dari daftar stok?`);
     if (confirmDelete) {
       try {
         await deleteDoc(doc(db, "produk", productId));
-        alert("Produk berhasil dihapus!");
+        // alert dihapus agar UI tidak terblokir saat data update otomatis
       } catch (err) {
         alert("Gagal menghapus: " + err.message);
       }
@@ -63,17 +78,18 @@ function ProductCard({ onAdd, isAdmin }) {
     setUploading(true);
     try {
       const imageUrl = await uploadToCloudinary(selectedFile);
+      
+      // Simpan ke Firestore
       await addDoc(collection(db, "produk"), {
         nama: newProduct.nama,
         harga: Number(newProduct.harga),
         image: imageUrl,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp() // Ini pemicu error jika tidak difilter di useEffect
       });
 
       setNewProduct({ nama: '', harga: '' });
       setSelectedFile(null);
       setShowForm(false);
-      alert("Produk berhasil dipajang di Toko Aciak!");
     } catch (err) {
       alert("Error: " + err.message);
     } finally {
@@ -82,7 +98,7 @@ function ProductCard({ onAdd, isAdmin }) {
   };
 
   return (
-    <div className="row g-3">
+    <div className="row g-3 px-1">
       {isAdmin && (
         <div className="col-6 col-md-3">
           {!showForm ? (
@@ -119,8 +135,6 @@ function ProductCard({ onAdd, isAdmin }) {
       {products.map((item) => (
         <div className="col-6 col-md-3" key={item.id}>
           <div className="card border-0 shadow-sm rounded-4 h-100 p-3 text-center position-relative">
-            
-            {/* TOMBOL HAPUS (Hanya muncul jika isAdmin true) */}
             {isAdmin && (
               <button 
                 className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle shadow-sm"
@@ -133,7 +147,7 @@ function ProductCard({ onAdd, isAdmin }) {
 
             <img src={item.image} alt={item.nama} style={{ height: '120px', objectFit: 'contain' }} className="mb-2" />
             <h6 className="small fw-bold mb-1 text-truncate">{item.nama}</h6>
-            <p className="text-primary fw-bold small mb-2">Rp {item.harga.toLocaleString('id-ID')}</p>
+            <p className="text-primary fw-bold small mb-2">Rp {Number(item.harga).toLocaleString('id-ID')}</p>
             <button className="btn btn-outline-primary btn-sm w-100 rounded-pill" onClick={() => onAdd(item)}>
               + Keranjang
             </button>
