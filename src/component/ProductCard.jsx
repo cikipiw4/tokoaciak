@@ -1,71 +1,120 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from "../services/firebase"; 
+import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
 
-// Data produk tetap di sini agar mudah dikelola
-export const initialProducts = [
-  { id: 1, nama: 'Beras Ramos 5kg', harga: 65000, stok: 12, img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400' },
-  { id: 2, nama: 'Minyak Goreng 2L', harga: 34000, stok: 5, img: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400' },
-  { id: 3, nama: 'Gula Pasir 1kg', harga: 16000, stok: 45, img: 'https://images.unsplash.com/photo-1581441363689-1f3c3c414635?w=400' },
-  { id: 4, nama: 'Kopi Bubuk 200g', harga: 12000, stok: 20, img: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400' },
-  { id: 5, nama: 'Sabun Mandi Cair', harga: 18000, stok: 15, img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400' },
-  { id: 6, nama: 'Susu Kental Manis', harga: 15000, stok: 30, img: 'https://images.unsplash.com/photo-1550583724-125581f75633?w=400' },
-];
+function ProductCard({ onAdd, isAdmin }) {
+  const [products, setProducts] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [newProduct, setNewProduct] = useState({ nama: '', harga: '' });
+  const [selectedFile, setSelectedFile] = useState(null);
 
-// Tambahkan prop onAdd di sini agar bisa menerima fungsi dari App.jsx
-function ProductCard({ showSearch = true, onAdd }) {
-  const [search, setSearch] = useState("");
-  const categories = ['Semua', 'Sembako', 'Dapur', 'Minuman', 'Mandi', 'Camilan'];
+  // Ambil data produk Toko Aciak dari Firebase
+  useEffect(() => {
+    const q = query(collection(db, "produk"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubscribe();
+  }, []);
 
-  const filtered = initialProducts.filter(p => p.nama.toLowerCase().includes(search.toLowerCase()));
+  // Fungsi Upload Gambar ke Cloudinary
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "tokoaciak"); // Nama preset yang kamu mau
+
+    // GANTI 'DASHBOARD_CLOUD_NAME_KAMU' dengan Cloud Name di dashboard Cloudinary kamu
+    const response = await fetch(
+      "https://api.cloudinary.com/v1_1/dhdi60xub/image/upload", 
+      { method: "POST", body: formData }
+    );
+
+    if (!response.ok) throw new Error("Gagal upload gambar");
+    const data = await response.json();
+    return data.secure_url; 
+  };
+
+  const handleSave = async () => {
+    if (!newProduct.nama || !newProduct.harga || !selectedFile) {
+      alert("Lengkapi Nama, Harga, dan Foto Barang!");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // 1. Upload ke Cloudinary dulu
+      const imageUrl = await uploadToCloudinary(selectedFile);
+
+      // 2. Simpan link-nya ke Firebase Firestore
+      await addDoc(collection(db, "produk"), {
+        nama: newProduct.nama,
+        harga: Number(newProduct.harga),
+        image: imageUrl,
+        createdAt: serverTimestamp()
+      });
+
+      setNewProduct({ nama: '', harga: '' });
+      setSelectedFile(null);
+      setShowForm(false);
+      alert("Produk berhasil dipajang di Toko Aciak!");
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
-    <>
-      {/* Search Bar & Kategori Belanja */}
-      {showSearch && (
-        <>
-          <div className="search-box d-flex mb-4 shadow-sm">
-            <input 
-              type="text" className="form-control border-0 py-3 ps-4 shadow-none" 
-              placeholder="Mau belanja apa hari ini di Toko Aciak?" 
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <button className="btn-blue m-1 px-4">Cari</button>
-          </div>
-
-          <div className="d-flex gap-2 mb-4 overflow-auto pb-2">
-            {categories.map((cat, i) => (
-              <button key={cat} className={`btn btn-sm rounded-pill px-4 py-2 shadow-sm ${i === 0 ? 'btn-blue' : 'btn-light bg-white border'}`}>
-                {cat}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Grid Produk */}
-      <div className="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
-        {filtered.map(p => (
-          <div className="col" key={p.id}>
-            <div className="card h-100 hover-card bg-white p-2 border-0 shadow-sm">
-              <img src={p.img} className="card-img-top rounded-3" style={{ height: '140px', objectFit: 'cover' }} alt={p.nama} />
-              <div className="card-body px-1 py-2">
-                <h6 className="text-truncate fw-bold mb-1" style={{fontSize: '0.85rem'}}>{p.nama}</h6>
-                <p className="text-danger fw-bold mb-2">Rp {p.harga.toLocaleString('id-ID')}</p>
-                <div className="d-flex justify-content-between align-items-center">
-                  <small className="text-muted" style={{fontSize: '0.7rem'}}>{p.stok} Tersedia</small>
-                  {/* Tombol dikasih onClick untuk menjalankan fungsi onAdd */}
-                  <button 
-                    className="btn btn-sm btn-blue rounded-circle py-0 px-2"
-                    onClick={() => onAdd && onAdd(p)}
-                  >
-                    <i className="bi bi-cart-plus"></i>
-                  </button>
-                </div>
+    <div className="row g-3">
+      {/* CARD TAMBAH PRODUK (Hanya untuk Admin) */}
+      {isAdmin && (
+        <div className="col-6 col-md-3">
+          {!showForm ? (
+            <div 
+              className="card border-0 shadow-sm rounded-4 h-100 d-flex align-items-center justify-content-center text-muted"
+              style={{ border: '2px dashed #0d6efd', cursor: 'pointer', minHeight: '220px', backgroundColor: '#f8faff' }}
+              onClick={() => setShowForm(true)}
+            >
+              <div className="text-center">
+                <i className="bi bi-plus-circle fs-1 text-primary"></i>
+                <p className="fw-bold small mt-2">Tambah Stok</p>
               </div>
             </div>
+          ) : (
+            <div className="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white">
+              <input type="text" className="form-control form-control-sm mb-2" placeholder="Nama Barang" 
+                value={newProduct.nama} onChange={e => setNewProduct({...newProduct, nama: e.target.value})} />
+              <input type="number" className="form-control form-control-sm mb-2" placeholder="Harga" 
+                value={newProduct.harga} onChange={e => setNewProduct({...newProduct, harga: e.target.value})} />
+              <input type="file" className="form-control form-control-sm mb-3" accept="image/*"
+                onChange={(e) => setSelectedFile(e.target.files[0])} />
+              
+              <div className="d-flex gap-2">
+                <button className="btn btn-primary btn-sm w-100 rounded-pill fw-bold" onClick={handleSave} disabled={uploading}>
+                  {uploading ? "Proses..." : "Simpan"}
+                </button>
+                <button className="btn btn-light btn-sm rounded-circle" onClick={() => setShowForm(false)}>✕</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* DAFTAR PRODUK */}
+      {products.map((item) => (
+        <div className="col-6 col-md-3" key={item.id}>
+          <div className="card border-0 shadow-sm rounded-4 h-100 p-3 text-center">
+            <img src={item.image} alt={item.nama} style={{ height: '120px', objectFit: 'contain' }} className="mb-2" />
+            <h6 className="small fw-bold mb-1 text-truncate">{item.nama}</h6>
+            <p className="text-primary fw-bold small mb-2">Rp {item.harga.toLocaleString('id-ID')}</p>
+            <button className="btn btn-outline-primary btn-sm w-100 rounded-pill" onClick={() => onAdd(item)}>
+              + Keranjang
+            </button>
           </div>
-        ))}
-      </div>
-    </>
+        </div>
+      ))}
+    </div>
   );
 }
 
