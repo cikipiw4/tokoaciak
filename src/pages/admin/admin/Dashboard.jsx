@@ -4,7 +4,7 @@ import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import ProductCard from "../../../component/ProductCard";
 
 function Dashboard({ isAdmin, onAdd }) {
-  const [promoText, setPromoText] = useState("Sembako Murah, Pengantaran Cepat");
+  const [promoText, setPromoText] = useState("Sembako murah, Pengantaran Cepat");
   const [isEditing, setIsEditing] = useState(false);
   const [newText, setNewText] = useState("");
 
