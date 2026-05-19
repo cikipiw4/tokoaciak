@@ -5,8 +5,8 @@
   --primary-blue: #0d6efd;
   --neon-blue: #00f0ff;
   --dark-blue: #0a192f;
-  --glass-bg: rgba(255, 255, 255, 0.45);
-  --glass-border: rgba(255, 255, 255, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.15);
   --side-w: 280px;
   --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -22,7 +22,6 @@ body {
   position: relative;
 }
 
-/* Aksen partikel abstrak di latar belakang */
 body::before {
   content: "";
   position: fixed;
@@ -35,14 +34,15 @@ body::before {
 }
 
 /* --- UI COMPONENTS & UTILITIES --- */
-.text-blue { color: var(--neon-blue) !important; text-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
+.text-blue { 
+  color: var(--neon-blue) !important; 
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.3); 
+}
 
 .btn-blue { 
   background: linear-gradient(135deg, #0d6efd, #0056b3); 
   color: white; 
   border: none; 
-  padding: 10px 24px; 
-  border-radius: 12px; 
   font-weight: 600;
   box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
   transition: all 0.3s var(--transition-smooth); 
@@ -51,6 +51,7 @@ body::before {
   background: linear-gradient(135deg, #1e7eff, #0069d9);
   transform: translateY(-2px); 
   box-shadow: 0 8px 20px rgba(13, 110, 253, 0.5);
+  color: white;
 }
 .btn-blue:active { transform: translateY(0); }
 
@@ -58,6 +59,10 @@ body::before {
   background: linear-gradient(135deg, rgba(13, 110, 253, 0.8), rgba(10, 88, 202, 0.9)) !important; 
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.transition-all {
+  transition: all 0.25s var(--transition-smooth);
 }
 
 /* --- LOADING ANIMATION --- */
@@ -85,7 +90,6 @@ body::before {
 /* --- LAYOUT STRUCTURE --- */
 .dashboard-wrapper { display: flex; min-height: 100vh; }
 
-/* Sidebar Transparan ala Glassmorphism */
 .sidebar { 
   width: var(--side-w); 
   background: rgba(10, 25, 47, 0.7); 
@@ -98,11 +102,21 @@ body::before {
   z-index: 1060; 
   transform: translateX(-100%); 
 }
-.main-content { flex: 1; transition: all 0.4s var(--transition-smooth); width: 100%; padding: 25px; }
+.main-content { 
+  flex: 1; 
+  transition: all 0.4s var(--transition-smooth); 
+  width: 100%; 
+  padding: 20px; 
+}
 
-.sidebar-open .sidebar { transform: translateX(0); box-shadow: 20px 0 40px rgba(0,0,0,0.3); }
-@media (min-width: 992px) { 
-  .sidebar-open .main-content { margin-left: var(--side-w); width: calc(100% - var(--side-w)); } 
+@media (min-width: 992px) {
+  .sidebar-open .sidebar { transform: translateX(0); }
+  .sidebar-open .main-content { margin-left: var(--side-w); width: calc(100% - var(--side-w)); }
+}
+
+/* Skenario Mobile / Tablet */
+@media (max-width: 991.98px) {
+  .sidebar-open .sidebar { transform: translateX(0); box-shadow: 20px 0 40px rgba(0,0,0,0.5); }
 }
 
 .overlay { 
@@ -117,15 +131,15 @@ body::before {
 .sidebar-open .overlay { display: block; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* --- NAVBAR --- */
+/* --- NAVBAR & SEARCH --- */
 .custom-nav { 
-  height: 75px; 
-  background: rgba(15, 43, 92, 0.4); 
+  height: 70px; 
+  background: rgba(15, 43, 92, 0.25); 
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   display: flex; 
   align-items: center; 
-  padding: 0 30px; 
+  padding: 0 20px; 
   position: sticky; 
   top: 0; 
   z-index: 1040; 
@@ -133,9 +147,9 @@ body::before {
 }
 .hamburger-btn { 
   border: none; 
-  background: rgba(255, 255, 255, 0.1); 
-  font-size: 1.5rem; 
-  margin-right: 20px; 
+  background: rgba(255, 255, 255, 0.05); 
+  font-size: 1.4rem; 
+  margin-right: 15px; 
   cursor: pointer; 
   color: #fff; 
   display: flex; 
@@ -144,95 +158,168 @@ body::before {
   border-radius: 10px;
   transition: 0.2s;
 }
-.hamburger-btn:hover { background: rgba(255, 255, 255, 0.2); color: var(--neon-blue); }
+.hamburger-btn:hover { background: rgba(255, 255, 255, 0.15); color: var(--neon-blue); }
+
+.search-box { 
+  border: 1px solid var(--glass-border); 
+  border-radius: 12px; 
+  overflow: hidden; 
+  background: rgba(255, 255, 255, 0.05); 
+  backdrop-filter: blur(10px);
+  transition: all 0.3s var(--transition-smooth); 
+}
+.search-box:focus-within { 
+  border-color: var(--neon-blue); 
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); 
+}
+.search-box input::placeholder { color: #8892b0; }
 
 /* --- SIDEBAR MENU --- */
 .menu-item { 
   display: flex; 
   align-items: center; 
-  padding: 14px 24px; 
+  padding: 12px 20px; 
   color: #b4c6ef; 
   text-decoration: none; 
-  border-radius: 12px; 
-  margin: 6px 16px; 
+  border-radius: 10px; 
+  margin: 6px 14px; 
   transition: all 0.25s ease; 
   font-weight: 500;
 }
-.menu-item i { margin-right: 15px; font-size: 1.3rem; transition: transform 0.25s ease; }
+.menu-item i { margin-right: 12px; font-size: 1.2rem; transition: transform 0.25s ease; }
 
 .menu-item.active { 
-  background: linear-gradient(90deg, rgba(13, 110, 253, 0.8) 0%, rgba(13, 110, 253, 0.3) 100%); 
+  background: linear-gradient(90deg, rgba(13, 110, 253, 0.7) 0%, rgba(13, 110, 253, 0.1) 100%); 
   color: white !important; 
   font-weight: 600; 
   border-left: 4px solid var(--neon-blue);
-  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.15);
 }
 .menu-item:hover:not(.active) { 
   background: rgba(255, 255, 255, 0.05); 
   color: white; 
   transform: translateX(4px);
 }
-.menu-item:hover i { transform: scale(1.15); color: var(--neon-blue); }
+.menu-item:hover i { transform: scale(1.1); color: var(--neon-blue); }
 
-/* --- CARDS & SEARCH (GLASSMORPHISM EFFECT) --- */
-.search-box { 
-  border: 1px solid var(--glass-border); 
-  border-radius: 14px; 
-  overflow: hidden; 
-  background: rgba(255, 255, 255, 0.07); 
-  backdrop-filter: blur(10px);
-  transition: all 0.3s var(--transition-smooth); 
-}
-.search-box:focus-within { 
-  border-color: var(--neon-blue); 
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.25); 
-}
-.search-box input { color: white !important; }
-.search-box input::placeholder { color: #8892b0; }
-
-/* Kartu dengan Efek Kaca Berpendar */
+/* --- CARDS (GLASSMORPHISM EFFECT) --- */
 .hover-card { 
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border) !important; 
-  border-radius: 20px; 
-  transition: all 0.4s var(--transition-smooth); 
+  border-radius: 16px; 
+  transition: all 0.35s var(--transition-smooth); 
   position: relative;
   overflow: hidden;
 }
 
-/* Efek highlight pendaran cahaya (glow) saat hover */
 .hover-card::before {
   content: "";
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), transparent 50%);
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), transparent 60%);
   opacity: 0;
-  transition: opacity 0.4s;
+  transition: opacity 0.35s;
   pointer-events: none;
 }
 
 .hover-card:hover { 
-  transform: translateY(-8px) scale(1.02); 
-  box-shadow: 0 20px 40px rgba(5, 12, 26, 0.5) !important; 
-  border-color: rgba(0, 240, 255, 0.4) !important; 
+  transform: translateY(-6px); 
+  box-shadow: 0 15px 30px rgba(5, 12, 26, 0.4) !important; 
+  border-color: rgba(0, 240, 255, 0.35) !important; 
 }
 .hover-card:hover::before { opacity: 1; }
 
-/* Animasi Muncul Halus untuk Card Grid saat Halaman Dimuat */
+/* Menjamin form input dalam mode admin terlihat kontras */
+.hover-card input, .hover-card select {
+  background: rgba(5, 12, 26, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+.hover-card input:focus, .hover-card select:focus {
+  border-color: var(--neon-blue) !important;
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.2) !important;
+}
+
+/* --- ANIMATIONS --- */
 .row > [class*='col-'] {
-  animation: fadeInUp 0.6s var(--transition-smooth) both;
+  animation: fadeInUp 0.5s var(--transition-smooth) both;
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Mengatur delay staggered pada card agar muncul bergantian */
-.row > [class*='col-']:nth-child(1) { animation-delay: 0.1s; }
-.row > [class*='col-']:nth-child(2) { animation-delay: 0.2s; }
-.row > [class*='col-']:nth-child(3) { animation-delay: 0.3s; }
-.row > [class*='col-']:nth-child(4) { animation-delay: 0.4s; }
+/* Staggered Delay Generator untuk Item Antarmuka */
+.row > [class*='col-']:nth-child(1) { animation-delay: 0.05s; }
+.row > [class*='col-']:nth-child(2) { animation-delay: 0.1s; }
+.row > [class*='col-']:nth-child(3) { animation-delay: 0.15s; }
+.row > [class*='col-']:nth-child(4) { animation-delay: 0.2s; }
+.row > [class*='col-']:nth-child(5) { animation-delay: 0.25s; }
+.row > [class*='col-']:nth-child(6) { animation-delay: 0.3s; }
+
+/* Kustomisasi Scrollbar Horizontal pada Tab Kategori Mobile */
+div::-webkit-scrollbar {
+  display: none;
+}
+
+/* --- PERBAIKAN GLOBAL & ATURAN UNTUK LAYAR MOBILE (HP) --- */
+
+.hover-card {
+  min-height: 350px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+/* Amankan tombol hapus (Trash) di pojok kanan atas */
+.hover-card .btn-danger.position-absolute {
+  top: 8px !important;
+  right: 8px !important; 
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10 !important;
+}
+
+/* ATURAN KHUSUS MOBILE (Wajib ada agar Indodes & grid patuh saat dibuka di HP) */
+@media (max-width: 767.98px) {
+  
+  /* 1. Paksa gambar (Indodes, So Klin, Daia) muat di dalam grid 2-kolom */
+  .hover-card img, 
+  .card.hover-card img, 
+  [class*="hover-card"] img {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 110px !important;      /* Kunci tinggi gambar di HP agar seragam */
+    max-height: 110px !important;
+    object-fit: contain !important; /* Paksa gambar menciut ke dalam kotak, anti meluber */
+    padding: 4px !important;
+    display: block !important;
+    margin: 0 auto 8px auto !important;
+  }
+
+  /* 2. Jika ada pembungkus gambar div kosong, matikan overflow-nya */
+  .hover-card .position-relative,
+  .hover-card div[class*="position-relative"] {
+    height: 110px !important;
+    max-height: 110px !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* 3. Menyesuaikan padding kartu produk agar teks tidak terpotong di HP */
+  .hover-card {
+    padding: 10px !important;
+    min-height: 310px !important; /* Sesuaikan tinggi kartu di HP */
+  }
+}
